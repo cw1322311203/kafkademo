@@ -1,21 +1,18 @@
 package com.cw.kafka.producer;
 
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.*;
 import org.apache.kafka.common.serialization.StringSerializer;
 
 import java.util.Properties;
 
 /**
- * 异步发送不带回调函数的API
+ * 异步发送带回调函数的API
  *
  * @author 陈小哥cw
- * @date 2020/6/19 9:41
+ * @date 2020/6/19 13:57
  */
-public class CustomProducer {
+public class ProducerCallback {
     public static void main(String[] args) {
-
         Properties properties = new Properties();
         // kafka集群，broker-list
         properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "cm1:9092,cm2:9092,cm3:9092");
@@ -37,7 +34,17 @@ public class CustomProducer {
 
         // 2.调用send方法
         for (int i = 0; i < 1000; i++) {
-            producer.send(new ProducerRecord<String, String>("first", i + "", "message-" + i));
+            producer.send(new ProducerRecord<String, String>("first", Integer.toString(i), "message-" + i), new Callback() {
+                // 回调函数，该方法会在Producer收到ack时调用，为异步调用
+                @Override
+                public void onCompletion(RecordMetadata metadata, Exception exception) {
+                    if (exception == null) {
+                        System.out.println("success->" + metadata.offset());
+                    } else {
+                        exception.printStackTrace();
+                    }
+                }
+            });
         }
 
         // 3.关闭生产者

@@ -3,18 +3,19 @@ package com.cw.kafka.producer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.serialization.StringSerializer;
 
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
 
 /**
- * 异步发送不带回调函数的API
- *
+ * 同步发送API
  * @author 陈小哥cw
- * @date 2020/6/19 9:41
+ * @date 2020/6/19 15:02
  */
-public class CustomProducer {
-    public static void main(String[] args) {
+public class SyncProducer {
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
 
         Properties properties = new Properties();
         // kafka集群，broker-list
@@ -27,7 +28,7 @@ public class CustomProducer {
         // 批次大小
         properties.put(ProducerConfig.BATCH_SIZE_CONFIG, 16384);
         // 等待时间
-        properties.put(ProducerConfig.LINGER_MS_CONFIG, 1);
+        properties.put(ProducerConfig.LINGER_MS_CONFIG, 1000);
         // RecordAccumulator缓冲区大小
         properties.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 33554432);
 
@@ -37,7 +38,9 @@ public class CustomProducer {
 
         // 2.调用send方法
         for (int i = 0; i < 1000; i++) {
-            producer.send(new ProducerRecord<String, String>("first", i + "", "message-" + i));
+            // 消息发送时间间隔由linger.ms决定，这里我们改为1s可以看到效果
+            RecordMetadata meta = producer.send(new ProducerRecord<String, String>("first", i + "", "message-" + i)).get();
+            System.out.println("offset = " + meta.offset());
         }
 
         // 3.关闭生产者

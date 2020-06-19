@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
+ * 案例:kafka 自定义存储offset 到mysql中
  * @author 陈小哥cw
  * @date 2020/6/19 20:12
  */
